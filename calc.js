@@ -1,9 +1,9 @@
 //calc.js
 
 //Implement clear
-//Find out why equal erases first part of fullExpression
+//DONE: Find out why equal erases first part of fullExpression
 //Handle negative numbers
-//Fix display CSS font sizes and such
+//DONE: Fix display CSS font sizes and such
 
 //Decinal, Percent, +/-
 
