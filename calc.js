@@ -1,51 +1,130 @@
 //calc.js
 
+//Implement clear
+//Find out why equal erases first part of fullExpression
+//Handle negative numbers
+//Fix display CSS font sizes and such
+
+//Decinal, Percent, +/-
+
+
+
+
 function operate(func,a,b) {
   return func(a,b);
 }
 
-function add(a,b) {
-  return a+b;
+function add(match,p1,p2,offset,string) {
+  return ""+(+p1+ +p2);
 }
 
-function sub(a,b) {
-
+function sub(match,p1,p2,offset,string) {
+  return ""+(p1-p2);
 }
 
-function mul(a,b) {
-
+function mul(match,p1,p2,offset,string) {
+  return ""+(p1*p2);
 }
 
-function div(a,b) {
+function div(match,p1,p2,offset,string) {
+  return ""+(p1/p2);
+}
+
+function evaluate() {
+
+  eval = expression;
+
+
+  mRx = /([0-9]+) x ([0-9]+)/;
+  dRx = /([0-9]+) \/ ([0-9]+)/;
+  aRx = /([0-9]+) \+ ([0-9]+)/;
+  sRx = /([0-9]+) - ([0-9]+)/;
+
+  while(mRx.test(eval)){
+    eval = eval.replace(mRx,mul);
+  }
+
+  while(dRx.test(eval)){
+    eval = eval.replace(dRx,div);
+  }
+
+  while(sRx.test(eval)) {
+    eval = eval.replace(sRx,sub);
+  }
+  while(aRx.test(eval)) {
+    eval = eval.replace(aRx,add);
+  }
+
+
+
+  return eval;
+
 
 }
 
 let buttonPress = (e) => {
 	pressed = e.target.id;
-	console.log(operatorEnteredLast);
+
 	if(document.querySelector("#"+pressed).className == "num") {
-		operatorEnteredLast = false;
+    if(operatorEnteredLast) {
+      calcField.textContent = displayValue(pressed);
+    }
+    else {
+      calcField.textContent += displayValue(pressed);
+    }
+    operatorEnteredLast = false;
 	}
-	else {
+	else if(document.querySelector("#"+pressed).className == "op"){
+
 		if(operatorEnteredLast) {
-			display.textContent = display.textContent.slice(0,-3)
+			expression = expression.slice(0,-3)
 		}
-		else {	
+		else {
+      if(multiplyFlag && (pressed == "add" || pressed =="min")) {
+        calcField.textContent = evaluate();
+      }
+      if(additionFlag && (pressed == "add" || pressed =="min")) {
+        calcField.textContent = evaluate();
+      }
 			operatorEnteredLast=true;
-		}		
+		}
+
 	}
-	display.textContent += displayValue(pressed);
+  else {
+    expression = evaluate();
+    calcField.textContent = expression;
+    }
+
+
+  if(pressed == "mul" || pressed=="div") {
+    multiplyFlag = true;
+    additionFlag = false;
+  }
+  if(pressed == "add" || pressed =="min") {
+    multiplyFlag = false;
+    additionFlag = true;
+  }
+
+  expression += displayValue(pressed);
+
+  //calcField.textContent = displayExpression(pressed);
+  fullExpression.textContent = expression;
+  console.log(expression);
 }
 
-//1+1
-console.log(operate(add,1,1));
 
 
-
+let expression = "";
+let multiplyFlag = false;
+let additionFlag = false;
 let operatorEnteredLast = true;
-let display = document.querySelector("#display");
+let fullExpression = document.querySelector("#fullexpression");
+let calcField = document.querySelector('#calcField');
 
-var btns = document.querySelectorAll(".num, .op");
+fullExpression.textContent = '';
+calcField.textContent = '';
+
+var btns = document.querySelectorAll(".num, .op,.equal");
 
 btns.forEach( btn => {
 	btn.addEventListener('click', buttonPress);
@@ -54,7 +133,7 @@ btns.forEach( btn => {
 
 
 function displayValue(idStr) {
-	
+
 	switch(idStr) {
 		case "b0":
 		return 0;
@@ -80,12 +159,13 @@ function displayValue(idStr) {
 		return " + ";
 		case "div":
 		return " / ";
-		case "x":
+		case "mul":
 		return " x ";
 		case "min":
 		return " - ";
-		default:	
+		default:
+    return "";
 	}
-	
-	
+
+
 }
