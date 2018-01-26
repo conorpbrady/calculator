@@ -18,6 +18,9 @@ DONE: Handle div by 0
   DONE: NaN is good.  Need to remove when number is pressed.
 TODO: Add Backspace button
 TODO: Add Keyboard Support
+
+TODO: Refactor code
+TODO: Comment code
 */
 
 function add(match,p1,p2,offset,string) {
