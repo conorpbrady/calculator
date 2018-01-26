@@ -1,18 +1,24 @@
 //calc.js
 
-//Implement clear
-//DONE: Find out why equal erases first part of fullExpression
-//Handle negative numbers
-//DONE: Fix display CSS font sizes and such
+/*
+DONE: Implement clear
+DONE: Find out why equal erases first part of fullExpression
+DONE: Handle negative numbers
+DONE: Fix display CSS font sizes and such
 
-//Decinal, Percent, +/-
+DONE: Percent
+DONE: Plus/Minus
+DONE: Decimal
+  DONE: Only one decimal per numbers
+  DONE: Regex needs to match decimal numbers
+  DONE: Round numbers
 
-
-
-
-function operate(func,a,b) {
-  return func(a,b);
-}
+TODO: Make it look nice
+DONE: Handle div by 0
+  DONE: NaN is good.  Need to remove when number is pressed.
+TODO: Add Backspace button
+TODO: Add Keyboard Support
+*/
 
 function add(match,p1,p2,offset,string) {
   return ""+(+p1+ +p2);
@@ -27,18 +33,22 @@ function mul(match,p1,p2,offset,string) {
 }
 
 function div(match,p1,p2,offset,string) {
+  if(p2==0) {return "Error";}
   return ""+(p1/p2);
 }
 
+function round(num, dec) {
+  return Number(Math.round(num + 'e' + dec) + 'e-' + dec);
+}
 function evaluate() {
 
   eval = expression;
 
 
-  mRx = /([0-9]+) x ([0-9]+)/;
-  dRx = /([0-9]+) \/ ([0-9]+)/;
-  aRx = /([0-9]+) \+ ([0-9]+)/;
-  sRx = /([0-9]+) - ([0-9]+)/;
+  mRx = /(-*[0-9]+\.?[0-9]*) x (-*[0-9]+\.?[0-9]*)/;
+  dRx = /(-*[0-9]+\.?[0-9]*) \/ (-*[0-9]+\.?[0-9]*)/;
+  aRx = /(-*[0-9]+\.?[0-9]*) \+ (-*[0-9]+\.?[0-9]*)/;
+  sRx = /(-*[0-9]+\.?[0-9]*) - (-*[0-9]+\.?[0-9]*)/;
 
   while(mRx.test(eval)){
     eval = eval.replace(mRx,mul);
@@ -56,8 +66,8 @@ function evaluate() {
   }
 
 
+  return round(eval,5);
 
-  return eval;
 
 
 }
@@ -66,7 +76,27 @@ let buttonPress = (e) => {
 	pressed = e.target.id;
 
 	if(document.querySelector("#"+pressed).className == "num") {
-    if(operatorEnteredLast) {
+    if(pressed == "plus") {
+      if(/-/.test(calcField.textContent)) {
+        calcField.textContent = calcField.textContent.substr(1);
+      }
+      else {
+        calcField.textContent = "-" + calcField.textContent;
+      }
+      negativeInExpression = /-([0-9]+\.?[0-9]*\s?[+-/x]?\s?)$/;
+      positiveInExpression = /([0-9]+\.?[0-9]*\s?[+-/x]?\s?)$/;
+      if(negativeInExpression.test(expression)) {
+        expression = expression.replace(negativeInExpression,"$1");
+      }
+      else {
+        expression = expression.replace(positiveInExpression,"-$1");
+      }
+    }
+
+    if(pressed == "dot" && /\./.test(calcField.textContent)) {
+      return;
+    }
+    if(operatorEnteredLast || calcField.textContent == "NaN") {
       calcField.textContent = displayValue(pressed);
     }
     else {
@@ -87,12 +117,24 @@ let buttonPress = (e) => {
         calcField.textContent = evaluate();
       }
 			operatorEnteredLast=true;
+      if(pressed == "perc") {
+        expression += " / 100";
+        calcField.textContent = expression = evaluate();
+        operatorEnteredLast = false;
+      }
 		}
 
 	}
-  else {
+  else if(document.querySelector("#"+pressed).className == "equal"){
     expression = evaluate();
     calcField.textContent = expression;
+    }
+  else if(document.querySelector("#"+pressed).className == "clr") {
+      expression = '';
+      eval = '';
+      calcField.textContent = '0';
+      operatorEnteredLast=true;
+      multiplyFlag = additionFlag = false;
     }
 
 
@@ -105,9 +147,9 @@ let buttonPress = (e) => {
     additionFlag = true;
   }
 
-  expression += displayValue(pressed);
+  if(expression=="NaN") {expression = displayValue(pressed);}
+  else {expression += displayValue(pressed);}
 
-  //calcField.textContent = displayExpression(pressed);
   fullExpression.textContent = expression;
   console.log(expression);
 }
@@ -122,9 +164,9 @@ let fullExpression = document.querySelector("#fullexpression");
 let calcField = document.querySelector('#calcField');
 
 fullExpression.textContent = '';
-calcField.textContent = '';
+calcField.textContent = '0';
 
-var btns = document.querySelectorAll(".num, .op,.equal");
+var btns = document.querySelectorAll(".num, .op,.equal,.clr");
 
 btns.forEach( btn => {
 	btn.addEventListener('click', buttonPress);
@@ -163,6 +205,8 @@ function displayValue(idStr) {
 		return " x ";
 		case "min":
 		return " - ";
+    case "dot":
+    return ".";
 		default:
     return "";
 	}
